@@ -4,3 +4,4 @@ lubrication.o
 subroutines.mod
 subroutines.o
 residual.txt
+MAKEFILE
