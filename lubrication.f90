@@ -13,7 +13,7 @@ PROGRAM LUBRICATION
     DOUBLE PRECISION :: DX, DY, EPS            ! РАЗМЕРЫ ШАГОВ ПО КООРДИНАТЕ, ТОЧНОСТЬ РЕШЕНИЯ
     DOUBLE PRECISION :: D, DP, DP0             ! ПЕРЕМЕННЫЕ ДЛЯ ПРОВЕРКИ КРИТЕРИЯ СХОДИМОСТИ
     DOUBLE PRECISION :: NUMERATOR, DENOMINATOR ! ВСПОМОГ. ПЕРЕМЕННЫЕ ДЛЯ ИТЕР. ПРОЦЕССА
-    DOUBLE PRECISION :: F                      ! СИЛА
+    DOUBLE PRECISION :: F                     ! СИЛА
 
     DOUBLE PRECISION :: LEFT, RIGHT
     DOUBLE PRECISION :: H_HALF_1, H_HALF_2
@@ -66,7 +66,7 @@ PROGRAM LUBRICATION
             H(I) = H1 - (X(I) / L1) * (H1 - H2 - DELTA)
 
         ELSE IF (X(I).GT.L1) THEN
-            H(I) = 1
+            H(I) = H2
         END IF
 
     END DO
@@ -95,11 +95,20 @@ PROGRAM LUBRICATION
 
                     CALL CALCULATE_ON_BREAK(I, J, P, PN, NI, NJ, ORDER, DX, DELTA, H2)
 
-
                 ELSE
+                    IF (X(I).LE.L1) THEN
+                        H_HALF_1 = (H_NONDIM(X(I), DELTA, H1, H2, L1) + &
+                        H_NONDIM(X(I + 1), DELTA, H1, H2, L1)) / 2
 
-                    H_HALF_1 = (H(I) + H(I + 1)) / 2
-                    H_HALF_2 = (H(I) + H(I - 1)) / 2
+                        H_HALF_2 = (H_NONDIM(X(I), DELTA, H1, H2, L1) + &
+                        H_NONDIM(X(I - 1), DELTA, H1, H2, L1)) / 2
+
+                    ELSE IF (X(I).GT.L1) THEN
+                        H_HALF_1 = H2
+                        H_HALF_2 = (H_NONDIM(X(I), DELTA, H1, H2, L1) + &
+                        H_NONDIM(X(I - 1), DELTA, H1, H2, L1)) / 2
+                    END IF
+
 
                     NUMERATOR = H_HALF_1**3 * P(I + 1, J) / DX**2 + H_HALF_2**3 * P(I - 1, J) / DX**2 + &
                     H(I)**3 * (P(I, J + 1) + P(I, J - 1)) / DY**2 - (H(I + 1) - H(I - 1)) / (2 * DX)
@@ -138,7 +147,7 @@ PROGRAM LUBRICATION
 
     CLOSE(2)
 
-    CALL OUTPUT_PLT(X, Y, P, H, NI, NJ)
+    CALL OUTPUT_PLT(X, Y, P, NI, NJ, DELTA, H1, H2, L1)
 
     WRITE(*,*) 'Force = ', F
     WRITE(*,*) 'dx = ', dx
@@ -146,17 +155,5 @@ PROGRAM LUBRICATION
 
 END PROGRAM
 
-REAL FUNCTION H_NONDIM(X)
 
-    IMPLICIT NONE
-    REAL :: X, DELTA, H1, H2, L1
 
-    IF (X.LE.L1) THEN
-        H_NONDIM = H1 / H2 - ((( - H1 / H2 + DELTA / H2 - 1) * X) / L1)
-    ELSE
-        H_NONDIM = 1
-    ENDIF
-
-    RETURN
-
-END FUNCTION H_NONDIM

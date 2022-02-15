@@ -15,7 +15,7 @@ MODULE SUBROUTINES
         ELSE IF (ORDER.EQ.2) THEN
 
             PN(I, NJ) = (4.0 / 3.0) * PN(I, NJ - 1) - (1.0 / 3.0) * PN(I, NJ - 2)
-            
+
         END IF
 
     END SUBROUTINE
@@ -64,14 +64,15 @@ MODULE SUBROUTINES
 
     END SUBROUTINE FORCE_CALCULATE
 
-    SUBROUTINE OUTPUT_PLT(X, Y, P, H, NI, NJ)
+    SUBROUTINE OUTPUT_PLT(X, Y, P, NI, NJ, DELTA, H1, H2, L1)
 
         IMPLICIT NONE
         INTEGER :: I, J, NI, NJ
         DOUBLE PRECISION, DIMENSION(NI) :: X
         DOUBLE PRECISION, DIMENSION(NJ) :: Y
-        DOUBLE PRECISION, DIMENSION(NI) :: H
+        !DOUBLE PRECISION, DIMENSION(NI) :: H
         DOUBLE PRECISION, DIMENSION(NI, NJ) :: P
+        DOUBLE PRECISION :: DELTA, H1, H2, L1
 
         OPEN (3, FILE='field.plt')
         WRITE(3,*) 'ZONE I=', NI
@@ -79,12 +80,28 @@ MODULE SUBROUTINES
 
         DO J = 1, NJ
             DO I = 1, NI
-                WRITE (3, *) X(I), Y(J), P(I,J), H(I)
+                WRITE (3, *) X(I), Y(J), P(I,J), H_NONDIM(X(I), DELTA, H1, H2, L1)
             END DO
         END DO
 
         CLOSE (3)
 
     END SUBROUTINE OUTPUT_PLT
+
+    DOUBLE PRECISION FUNCTION H_NONDIM(X_COORD, DELTA, H1, H2, L1)
+
+    IMPLICIT NONE
+    DOUBLE PRECISION :: X_COORD, DELTA, H1, H2, L1
+
+    IF (X_COORD.LE.L1) THEN
+        H_NONDIM = H1 - (X_COORD / L1) * (H1 - H2 - DELTA)
+
+    ELSE IF (X_COORD.GT.L1) THEN
+        H_NONDIM = H2
+
+    ENDIF
+
+END FUNCTION H_NONDIM
+
 
 END MODULE SUBROUTINES
