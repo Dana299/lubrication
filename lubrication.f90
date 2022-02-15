@@ -71,35 +71,29 @@ PROGRAM LUBRICATION
 
     END DO
 
-    P(:,:) = 0
-    PN(:,:) = 0
+    P(:,:) = 0.
+    PN(:,:) = 0.
 
-
-    D = 0
     DP = 1
     DP0 = 1
 
     ! ИТЕРАЦИОННЫЙ ПРОЦЕСС
     S = 0
 
-    OPEN (2, FILE='residual.txt')
+    OPEN (2, FILE='residual.plt')
 
     DO WHILE ((S.LT.S_MAX).AND.((DP / DP0).GT.EPS))
 
         S = S + 1
+
         DP = 0.
 
         DO I = 2, NI - 1
-
             DO J = 2, NJ - 1
 
                 IF (I.EQ.NODE_L1) THEN         ! РАСЧЕТ НА РАЗРЫВЕ
 
                     CALL CALCULATE_ON_BREAK(I, J, P, PN, NI, NJ, ORDER, DX, DELTA, H2)
-
-                    D = ABS(PN(I, J) - P(I,J))
-
-                    DP = MAX(DP, D)
 
 
                 ELSE
@@ -116,7 +110,6 @@ PROGRAM LUBRICATION
                     PN(I, J) = NUMERATOR / DENOMINATOR
 
                     D = ABS(PN(I, J) - P(I,J))
-
                     DP = MAX(DP, D)
 
 				END IF
@@ -133,6 +126,10 @@ PROGRAM LUBRICATION
         P(:,:) = PN(:,:)
 
         CALL FORCE_CALCULATE(DX, DY, P, F, NI, NJ)
+
+        IF (S == 1) THEN
+            DP0 = DP
+        END IF
 
         WRITE(2,*) S, DP/DP0, F
         WRITE(*,*) 'Iteration ', S, DP/DP0

@@ -3,5 +3,6 @@ force_residual.txt
 lubrication.o
 subroutines.mod
 subroutines.o
-residual.txt
+residual.plt
+residual.lay
 MAKEFILE

@@ -10,11 +10,12 @@ MODULE SUBROUTINES
         DOUBLE PRECISION, DIMENSION(NI, NJ) :: PN
 
         IF (ORDER.EQ.1) THEN
-            PN(I, NJ) = P(I, NJ - 1)
+            PN(I, NJ) = PN(I, NJ - 1)
 
         ELSE IF (ORDER.EQ.2) THEN
-            PN(I, NJ) = (4.0 / 3.0) * P(I, NJ - 1) - (1.0 / 3.0) * P(I, NJ - 2)
 
+            PN(I, NJ) = (4.0 / 3.0) * PN(I, NJ - 1) - (1.0 / 3.0) * PN(I, NJ - 2)
+            
         END IF
 
     END SUBROUTINE
@@ -35,8 +36,8 @@ MODULE SUBROUTINES
             PN(I, J) = (RIGHT * P(I + 1, J) + LEFT * P(I - 1, J) + DELTA) / (LEFT + RIGHT)
 
         ELSE IF (ORDER == 2) THEN
-            PN(I, J) = ((RIGHT / 2) * (4.0 * P(I + 1,J) - P(I + 2, J)) - (LEFT / 2) * (-4.0 * P(I - 1, J) + &
-            P(I - 2, J)) + DELTA) / ((3.0 / 2) * (LEFT + RIGHT))
+            PN(I, J) = ((RIGHT / 2) * (4.0 * PN(I + 1,J) - PN(I + 2, J)) - (LEFT / 2) * (-4.0 * PN(I - 1, J) + &
+            PN(I - 2, J)) + DELTA) / ((3.0 / 2) * (LEFT + RIGHT))
 
         END IF
 
@@ -49,8 +50,6 @@ MODULE SUBROUTINES
         DOUBLE PRECISION, DIMENSION(NI, NJ) :: P
         DOUBLE PRECISION :: DX, DY, DS, F, DF
 
-        OPEN (4, FILE='force_residual.txt')
-
         F = 0
         DS = DX * DY
 
@@ -62,8 +61,6 @@ MODULE SUBROUTINES
 
             ENDDO
         ENDDO
-
-        WRITE(4,*) F
 
     END SUBROUTINE FORCE_CALCULATE
 
